@@ -1,5 +1,5 @@
 import java.sql.* ;
-
+import java.util.Scanner;
 class zooKiosk
 {
     public static void main ( String [ ] args ) throws SQLException
@@ -37,111 +37,71 @@ class zooKiosk
             System.err.println("Error!! do not have a password to connect to the database!");
             System.exit(1);
         }
-        Connection con = DriverManager.getConnection (url,your_userid,your_password) ;
-        Statement statement = con.createStatement ( ) ;
+        Connection con = null;
+        Statement statement = null;
+        Scanner scanner = new Scanner(System.in);
 
-        // Creating a table
-        try
-        {
-            String createSQL = "CREATE TABLE " + tableName + " (id INTEGER, name VARCHAR (25)) ";
-            System.out.println (createSQL ) ;
-            statement.executeUpdate (createSQL ) ;
-            System.out.println ("DONE");
-        }
-        catch (SQLException e)
-        {
-            sqlCode = e.getErrorCode(); // Get SQLCODE
-            sqlState = e.getSQLState(); // Get SQLSTATE
-
-            // Your code to handle errors comes here;
-            // something more meaningful than a print would be good
-            System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
-            System.out.println(e);
+        try {
+            con = DriverManager.getConnection(url, your_userid, your_password);
+            statement = con.createStatement();
+            System.out.println("Connected to DB2 database.");
+        } catch (SQLException e) {
+            System.out.println("Connection failed.");
+            e.printStackTrace();
+            System.exit(1);
         }
 
-        // Inserting Data into the table
-        try
-        {
-            String insertSQL = "INSERT INTO " + tableName + " VALUES ( 1 , \'Vicki\' ) " ;
-            System.out.println ( insertSQL ) ;
-            statement.executeUpdate ( insertSQL ) ;
-            System.out.println ( "DONE" ) ;
+        int option = 0;
+        while (option != 5) {
+            System.out.println("\nZoo Kiosk Main Menu");
+            System.out.println("1. Look Up All Attractions in Region");
+            System.out.println("2. Look Up Position for a Specific Animal");
+            System.out.println("3. List All Show information for a Specific Date");
+            System.out.println("4. Sponsor a Conservation Program");
+            System.out.println("5. Exist Kiosk");
+            System.out.print("Enter your option: ");
 
-            insertSQL = "INSERT INTO " + tableName + " VALUES ( 2 , \'Vera\' ) " ;
-            System.out.println ( insertSQL ) ;
-            statement.executeUpdate ( insertSQL ) ;
-            System.out.println ( "DONE" ) ;
-            insertSQL = "INSERT INTO " + tableName + " VALUES ( 3 , \'Franca\' ) " ;
-            System.out.println ( insertSQL ) ;
-            statement.executeUpdate ( insertSQL ) ;
-            System.out.println ( "DONE" ) ;
-
-        }
-        catch (SQLException e)
-        {
-            sqlCode = e.getErrorCode(); // Get SQLCODE
-            sqlState = e.getSQLState(); // Get SQLSTATE
-
-            // Your code to handle errors comes here;
-            // something more meaningful than a print would be good
-            System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
-            System.out.println(e);
-        }
-
-        // Querying a table
-        try
-        {
-            String querySQL = "SELECT id, name from " + tableName + " WHERE NAME = \'Vicki\'";
-            System.out.println (querySQL) ;
-            java.sql.ResultSet rs = statement.executeQuery ( querySQL ) ;
-
-            while ( rs.next ( ) )
-            {
-                int id = rs.getInt ( 1 ) ;
-                String name = rs.getString (2);
-                System.out.println ("id:  " + id);
-                System.out.println ("name:  " + name);
+            try {
+                option = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid option. Please enter a number.");
+                continue;
             }
-            System.out.println ("DONE");
-        }
-        catch (SQLException e)
-        {
-            sqlCode = e.getErrorCode(); // Get SQLCODE
-            sqlState = e.getSQLState(); // Get SQLSTATE
 
-            // Your code to handle errors comes here;
-            // something more meaningful than a print would be good
-            System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
-            System.out.println(e);
-        }
+            switch(option) {
+                case 1:
+                    AttractionsInRegion.execute(con, scanner);
+                    break;
+                case 2:
+                    AnimalPositionLookup.execute(con, scanner);
+                    break;
+                case 3:
+                    ListShowsByDate.execute(con, scanner);
+                    break;
+                case 4:
+                    SponsorConservationProgram.execute(con, scanner);
+                    break;
+                case 5:
+                    System.out.println("Exiting kiosk. Goodbye!");
+                    break;
 
-        //Updating a table
-        try
-        {
-            String updateSQL = "UPDATE " + tableName + " SET NAME = \'Mimi\' WHERE id = 3";
-            System.out.println(updateSQL);
-            statement.executeUpdate(updateSQL);
-            System.out.println("DONE");
-
-            // Dropping a table
-            String dropSQL = "DROP TABLE " + tableName;
-            System.out.println ( dropSQL ) ;
-            statement.executeUpdate ( dropSQL ) ;
-            System.out.println ("DONE");
-        }
-        catch (SQLException e)
-        {
-            sqlCode = e.getErrorCode(); // Get SQLCODE
-            sqlState = e.getSQLState(); // Get SQLSTATE
-
-            // Your code to handle errors comes here;
-            // something more meaningful than a print would be good
-            System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
-            System.out.println(e);
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
         }
 
-        // Finally but importantly close the statement and connection
-        statement.close ( ) ;
-        con.close ( ) ;
+        // Close resources.
+        try {
+            if (statement != null)
+                statement.close();
+            if (con != null)
+                con.close();
+            scanner.close();
+            System.out.println("Database connection closed.");
+        } catch (SQLException e) {
+            System.out.println("Error closing resources.");
+            e.printStackTrace();
+        }
     }
+
 }
